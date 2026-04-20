@@ -42,6 +42,23 @@ jobs:
           echo "--- VERIFYING TEMPLATES ---"
           ls -la "$HOME/Library/Application Support/Godot/templates/3.5.3.stable.mono/"
 
+      # 3. Build C# Solution
+      - name: Build C# Solution
+        run: |
+          GODOT_CMD="$(pwd)/Godot_mono.app/Contents/MacOS/Godot"
+
+          # Clean up Windows absolute paths
+          sed -i '' 's|C:/Users/[^/]*/||g' "Lacie Engine.csproj"
+
+          # Restore packages
+          dotnet restore "Lacie Engine.csproj"
+
+          # FORCE compile the ExportRelease configuration before Godot tries to export
+          dotnet build "Lacie Engine.csproj" -c ExportRelease
+
+          # Build Godot's internal metadata just in case
+          "$GODOT_CMD" --no-window --build-solutions --quit || true
+
       # 4. Export Godot iOS Xcode Project
       - name: Export Xcode Project
         run: |
