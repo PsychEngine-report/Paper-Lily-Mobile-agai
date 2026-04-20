@@ -65,14 +65,19 @@ namespace LacieEngine.Core
 		{
 			await GDUtil.DelayOneFrame();
 			await Game.Screen.ShowLoadingScreenInstantly();
-			Task task = Task.Run(delegate
-			{
-				LoadingProc();
-			});
+			#if IOS
+    		Log.Info("iOS detected: Running initialization on main thread.");
+    		LoadingProc();
+			#else
+    		Task task = Task.Run(delegate
+    		{
+        	LoadingProc();
+    		});
 			while (!task.IsCompleted)
 			{
 				await GDUtil.DelayOneFrame();
 			}
+			#endif
 			await Game.Screen.HideLoadingScreen();
 			Log.Info(Game.Settings.ProductName, " ", Game.Settings.ProductVersion, ", Game start!");
 			if (Game.Language.GetAvailableLanguages().Count > 1 && Game.Settings.TranslationSelected.IsNullOrEmpty())
